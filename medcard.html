@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Медкарта — mymetrica</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <header class="page-top" aria-label="Верхняя панель">
+        <button class="back-btn" type="button" id="backBtn" aria-label="Назад">
+          <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="page-top__title">
+          <div class="page-top__name">Медкарта</div>
+        </div>
+        <div class="page-top__spacer" aria-hidden="true"></div>
+      </header>
+
+      <main class="content medcard-content" aria-label="Экран медкарты">
+        <!-- Список анализов -->
+        <div class="medcard-list" id="medcardList"></div>
+      </main>
+    </div>
+
+    <script src="scripts/medcard.js"></script>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Расшифровка — mymetrica</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <header class="page-top" aria-label="Верхняя панель">
+        <button class="back-btn" type="button" id="backBtn" aria-label="Назад">
+          <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="page-top__title">
+          <div class="page-top__name">Расшифровка</div>
+        </div>
+        <div class="page-top__spacer" aria-hidden="true"></div>
+      </header>
+
+      <main class="content decode-content" aria-label="Экран расшифровки">
+        <div class="decode-empty">
+          <div class="decode-empty__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 2v6h6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 13H8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 17H8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 9H8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="decode-empty__text">
+            Загрузите первый анализ<br>для получения расшифровки
+          </div>
+        </div>
+      </main>
+
+      <div class="chat-bar">
+        <div class="chat-bar__inner">
+          <label class="attach-btn" aria-label="Прикрепить файл">
+            <input type="file" accept="image/*,application/pdf" hidden multiple />
+            <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </label>
+          <div class="chat-bar__input-fake">Сообщение...</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Simple inline script for back button
+      document.getElementById('backBtn')?.addEventListener('click', () => {
+        window.location.href = 'index.html';
+        if (window.Telegram?.WebApp) {
+           window.Telegram.WebApp.BackButton.hide();
+        }
+      });
+
+      // Telegram WebApp setup
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.BackButton.show();
+        window.Telegram.WebApp.BackButton.onClick(() => {
+           window.location.href = 'index.html';
+        });
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+      }
+    </script>
+  </body>
+</html>

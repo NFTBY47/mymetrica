@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>mymetrica</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <section class="calendar" aria-label="Календарь таблетницы">
+        <div class="calendar__row">
+          <div class="calendar__title">Таблетки</div>
+          <button class="calendar__link" type="button" data-action="pills">Открыть</button>
+        </div>
+        <div class="calendar__strip" id="calendarStrip" role="list" aria-label="Даты"></div>
+        <div class="pills" id="pillsSummary" aria-label="План приёма таблеток"></div>
+      </section>
+
+      <section class="profile-hero" aria-label="Аккаунт">
+        <div class="profile-hero__bg"></div>
+        <div class="profile-hero__content">
+          <div class="avatar" role="img" aria-label="Аватар">
+            <svg class="avatar__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 12a3.6 3.6 0 100-7.2 3.6 3.6 0 000 7.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M5.5 20a6.5 6.5 0 0113 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="profile-hero__meta">
+            <div class="profile-hero__name" id="currentName">Пользователь</div>
+            <div class="profile-hero__hint">mymetrica</div>
+          </div>
+          <div class="profile-hero__actions">
+            <button class="round-btn" type="button" data-action="support" aria-label="Поддержка">
+              <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 12a8 8 0 0116 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M6 12v4a2 2 0 01-2-2v-1a2 2 0 012-2zm12 0v4a2 2 0 002-2v-1a2 2 0 00-2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="round-btn" type="button" data-action="share" aria-label="Поделиться">
+              <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14 5h5v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M10 14l9-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M19 14v4a2 2 0 01-2 2H7a2 2 0 01-2-2V8a2 2 0 012-2h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <main class="content" aria-label="Главный экран">
+        <section class="menu" aria-label="Функции">
+          <button class="menu-item" type="button" data-action="decode">
+            <span class="menu-item__icon" aria-hidden="true">
+              <svg class="tile__svg" viewBox="0 0 24 24">
+                <path d="M7 3h8l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M15 3v5h5" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 12h8M8 16h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="menu-item__label">Расшифровка анализов</span>
+            <span class="menu-item__chev" aria-hidden="true">›</span>
+          </button>
+
+          <button class="menu-item" type="button" data-action="medcard">
+            <span class="menu-item__icon" aria-hidden="true">
+              <svg class="tile__svg" viewBox="0 0 24 24">
+                <path d="M4 7a2 2 0 012-2h5l2 2h7a2 2 0 012 2v10a3 3 0 01-3 3H7a3 3 0 01-3-3V7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="menu-item__label">Медкарта</span>
+            <span class="menu-item__chev" aria-hidden="true">›</span>
+          </button>
+
+          <button class="menu-item" type="button" data-action="dynamics">
+            <span class="menu-item__icon" aria-hidden="true">
+              <svg class="tile__svg" viewBox="0 0 24 24">
+                <path d="M4 19V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M4 19h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M7 15l4-4 3 3 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="menu-item__label">Динамика показателей</span>
+            <span class="menu-item__chev" aria-hidden="true">›</span>
+          </button>
+
+          <button class="menu-item" type="button" data-action="invite">
+            <span class="menu-item__icon" aria-hidden="true">
+              <svg class="tile__svg" viewBox="0 0 24 24">
+                <path d="M4 11l8-7 8 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6.5 10.5V20a2 2 0 002 2h7a2 2 0 002-2v-9.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M10.5 22v-6a1.5 1.5 0 013 0v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="menu-item__label">Семья</span>
+            <span class="menu-item__chev" aria-hidden="true">›</span>
+          </button>
+        </section>
+
+        <div class="spacer" aria-hidden="true"></div>
+      </main>
+
+      <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <script src="scripts/app.js"></script>
+  </body>
+</html>
