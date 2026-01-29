@@ -332,17 +332,13 @@ function applyTelegramTheme() {
   tg.ready();
   tg.expand();
 
-  const t = tg.themeParams || {};
-  const css = document.documentElement.style;
+  document.documentElement.classList.add('is-telegram');
 
-  if (t.bg_color) css.setProperty('--bg', t.bg_color);
-  if (t.text_color) css.setProperty('--text', t.text_color);
-
-  // Use Telegram button/secondary colors when available to feel native
-  if (t.button_color) css.setProperty('--accent', t.button_color);
-  if (t.link_color) css.setProperty('--accent2', t.link_color);
-
-  tg.onEvent('themeChanged', applyTelegramTheme);
+  try {
+    tg.setBackgroundColor?.('#fbfcff');
+    tg.setHeaderColor?.('#fbfcff');
+  } catch {
+  }
 }
 
 function main() {
