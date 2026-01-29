@@ -36,7 +36,23 @@
   --pad: 16px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
+  color-scheme: light;
+ }
+
+ html.is-telegram{
+   --glass-blur: none;
+ }
+
+ html.is-telegram .calendar,
+ html.is-telegram .pills,
+ html.is-telegram .menu-item,
+ html.is-telegram .glass-card,
+ html.is-telegram .pill,
+ html.is-telegram .sheet__panel,
+ html.is-telegram .chat-bar__inner{
+   backdrop-filter: none;
+   -webkit-backdrop-filter: none;
+ }
 
 .glass-card .calendar__strip{margin-top: 10px}
 
@@ -860,50 +876,6 @@ button{
 
 .trash-btn:active{transform: translateY(1px)}
 
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg: radial-gradient(120% 120% at 20% 0%, rgba(91,92,255,.18), rgba(91,92,255,0) 55%),
-          radial-gradient(120% 120% at 90% 10%, rgba(0,194,168,.14), rgba(0,194,168,0) 55%),
-          linear-gradient(180deg, #0b0f1a, #070a12);
-    --surface: rgba(255,255,255,.06);
-    --text: rgba(255,255,255,.92);
-    --muted: rgba(255,255,255,.60);
-    --hairline: rgba(255,255,255,.10);
-    --shadow: 0 12px 30px rgba(0,0,0,0.38);
-    --brand-surface: rgba(255,255,255,.06);
-    --brand-surface-2: rgba(255,255,255,.05);
-    --brand-border: rgba(255,255,255,.12);
-
-    --glass-bg: rgba(255,255,255,.08);
-    --glass-bg-strong: rgba(255,255,255,.06);
-    --glass-stroke: rgba(255,255,255,.16);
-    --glass-stroke-soft: rgba(255,255,255,.12);
-    --glass-shadow: 0 18px 38px rgba(0, 0, 0, .50);
-    --glass-inset: inset 0 1px 0 rgba(255,255,255,.10);
-  }
-  .menu-item{background: var(--glass-bg); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%)}
-  .calendar{background: var(--glass-bg); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%)}
-  .mini-stat{background: rgba(255,255,255,.04)}
-  .day{background: rgba(255,255,255,.04)}
-  .pills{background: var(--glass-bg-strong); backdrop-filter: blur(22px) saturate(140%); -webkit-backdrop-filter: blur(22px) saturate(140%)}
-  .pill{background: rgba(255,255,255,.06); backdrop-filter: blur(18px) saturate(130%); -webkit-backdrop-filter: blur(18px) saturate(130%)}
-  .pill__time{color: rgba(255,255,255,.82)}
-  .pills__list::-webkit-scrollbar-thumb{background: rgba(255,255,255,.18)}
-  .field__input{background: rgba(255,255,255,.06)}
-  .date-pick__btn{background: rgba(255,255,255,.06)}
-  .date-field{background: rgba(255,255,255,.06)}
-  .chip-btn{background: rgba(255,255,255,.06)}
-  .stepper{background: rgba(255,255,255,.06)}
-  .sheet__panel{background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.14)}
-  .sheet__backdrop{background: rgba(0,0,0,.55)}
-  .md{background: rgba(255,255,255,.06)}
-  .pill-row{background: rgba(255,255,255,.06)}
-  .pill-row__time{color: rgba(255,255,255,.82)}
-  .edit-btn{background: rgba(91,92,255,.14); color: rgba(160, 176, 255, .92); border-color: rgba(91,92,255,.22)}
-  .trash-btn{background: rgba(255, 59, 48, .14); color: rgba(255, 99, 92, .92); border-color: rgba(255, 59, 48, .26)}
-  .back-btn{background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22); box-shadow: 0 16px 34px rgba(0,0,0,.42)}
-}
-
 /* Decode / Chat Styles */
 .decode-content{
   display:flex;
@@ -974,11 +946,6 @@ button{
   font-size: 15px;
   color: var(--muted);
   font-weight: 500;
-}
-
-@media (prefers-color-scheme: dark){
-  .chat-bar__inner{background: rgba(30,30,30,.65); border-color: rgba(255,255,255,.12)}
-  .decode-empty__icon{color: rgba(160,176,255,.35)}
 }
 
 /* Medcard Styles */
@@ -1179,11 +1146,4 @@ button{
 @keyframes fadeIn {
   from{opacity: 0; transform: translateY(-4px)}
   to{opacity: 1; transform: translateY(0)}
-}
-
-@media (prefers-color-scheme: dark){
-  .medcard-empty__icon{color: rgba(0,194,168,.35)}
-  .analysis-card{background: var(--surface); border-color: rgba(255,255,255,.08)}
-  .analysis-card__date{background: rgba(255,255,255,.08)}
-  .analysis-markers{border-top-color: rgba(255,255,255,.1)}
 }
