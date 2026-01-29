@@ -68,6 +68,13 @@
         });
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
+
+        document.documentElement.classList.add('is-telegram');
+        try {
+          window.Telegram.WebApp.setBackgroundColor?.('#fbfcff');
+          window.Telegram.WebApp.setHeaderColor?.('#fbfcff');
+        } catch {
+        }
       }
     </script>
   </body>
