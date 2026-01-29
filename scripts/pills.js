@@ -528,6 +528,13 @@ function initHeader(iso) {
     Telegram.WebApp.BackButton?.onClick?.(goBack);
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
+
+    document.documentElement.classList.add('is-telegram');
+    try {
+      Telegram.WebApp.setBackgroundColor?.('#fbfcff');
+      Telegram.WebApp.setHeaderColor?.('#fbfcff');
+    } catch {
+    }
   }
 }
 
