@@ -127,16 +127,12 @@ function renderMarkers(markers) {
 
 function renderList(items) {
   const listEl = $('#medcardList');
-  const emptyEl = $('#medcardEmpty');
-  
+  if (!listEl) return;
+
   if (!items || items.length === 0) {
-    if (listEl) listEl.hidden = true;
-    if (emptyEl) emptyEl.hidden = false;
+    listEl.innerHTML = '';
     return;
   }
-
-  if (listEl) listEl.hidden = false;
-  if (emptyEl) emptyEl.hidden = true;
 
   listEl.innerHTML = items.map(item => `
     <div class="analysis-card" role="button" tabindex="0">
@@ -182,6 +178,13 @@ function initBack() {
     });
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
+
+    document.documentElement.classList.add('is-telegram');
+    try {
+      Telegram.WebApp.setBackgroundColor?.('#fbfcff');
+      Telegram.WebApp.setHeaderColor?.('#fbfcff');
+    } catch {
+    }
   }
 }
 
