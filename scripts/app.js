@@ -295,8 +295,8 @@ function initActions() {
           window.open('https://t.me/mymetrica_help', '_blank');
         }
         break;
-      case 'share':
-        toast('Поделиться: скоро');
+      case 'notifications':
+        toast('Пока нет уведомлений');
         break;
       case 'balance':
         toast('Баланс: бесплатно без ограничений');
