@@ -245,6 +245,24 @@ function syncTimePickerSelection() {
   mEl?.scrollIntoView?.({ block: 'nearest' });
 }
 
+function getClosestTimeValue(container) {
+  const items = $all('.time-picker__item', container);
+  if (items.length === 0) return null;
+  const rect = container.getBoundingClientRect();
+  const centerY = rect.top + rect.height / 2;
+  let best = null;
+  let bestDist = Infinity;
+  items.forEach((item) => {
+    const r = item.getBoundingClientRect();
+    const dist = Math.abs(r.top + r.height / 2 - centerY);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = item;
+    }
+  });
+  return best?.dataset?.value || null;
+}
+
 function openTimeSheetFor(idx) {
   const t = ui.times?.[idx] || '09:00';
   const { h, mm } = parseTime(t);
@@ -586,6 +604,20 @@ function initTimeSheet() {
     });
   };
 
+  const syncScrollSelection = () => {
+    const hVal = getClosestTimeValue(hoursWrap);
+    const mVal = getClosestTimeValue(minsWrap);
+    if (!hVal || !mVal) return;
+    ui.timeDraft = `${hVal}:${mVal}`;
+    syncTimePickerSelection();
+  };
+
+  let scrollTimer;
+  const onScroll = () => {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(syncScrollSelection, 80);
+  };
+
   const close = () => {
     closeSheet('timeSheet');
     if (ui.returnTo === 'addSheet') {
@@ -620,6 +652,9 @@ function initTimeSheet() {
   };
 
   build();
+
+  hoursWrap.addEventListener('scroll', onScroll, { passive: true });
+  minsWrap.addEventListener('scroll', onScroll, { passive: true });
 
   backdrop?.addEventListener('click', close);
   closeBtn?.addEventListener('click', close);
