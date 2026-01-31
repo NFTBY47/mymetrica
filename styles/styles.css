@@ -980,6 +980,24 @@ html.is-sheet-open, html.is-sheet-open body{
   padding: 6px 0 2px;
 }
 
+.time-picker{
+  position: relative;
+}
+
+.time-picker::before{
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 40px;
+  border-radius: 14px;
+  background: rgba(99,102,241,.08);
+  border: 1px solid rgba(99,102,241,.18);
+  pointer-events: none;
+}
+
 .time-picker__col{
   display:flex;
   flex-direction:column;
@@ -999,18 +1017,19 @@ html.is-sheet-open, html.is-sheet-open body{
   border-radius: 12px;
   border: 1px solid rgba(148,163,184,.18);
   background: rgba(255,255,255,.60);
-  font-weight: 600;
-  font-size: 13px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: .02em;
   color: rgba(30,41,59,.75);
   scroll-snap-align: center;
   transition: all .15s ease;
 }
 
 .time-picker__item.is-selected{
-  border-color: rgba(99,102,241,.28);
-  background: rgba(99,102,241,.10);
-  color: var(--accent);
-  font-weight: 700;
+  border-color: rgba(99,102,241,.32);
+  background: rgba(99,102,241,.14);
+  color: #1f2a4a;
+  font-weight: 800;
 }
 
 .time-picker__sep{

@@ -227,7 +227,7 @@ function setTimeDraft(h, mm) {
   ui.timeDraft = `${pad2(h)}:${pad2(mm)}`;
 }
 
-function syncTimePickerSelection() {
+function syncTimePickerSelection({ scroll = true } = {}) {
   const { h, mm } = parseTime(ui.timeDraft);
   const hoursWrap = $('#timeHours');
   const minsWrap = $('#timeMinutes');
@@ -241,8 +241,10 @@ function syncTimePickerSelection() {
   if (hEl) hEl.classList.add('is-selected');
   if (mEl) mEl.classList.add('is-selected');
 
-  hEl?.scrollIntoView?.({ block: 'nearest' });
-  mEl?.scrollIntoView?.({ block: 'nearest' });
+  if (scroll) {
+    hEl?.scrollIntoView?.({ block: 'nearest' });
+    mEl?.scrollIntoView?.({ block: 'nearest' });
+  }
 }
 
 function getClosestTimeValue(container) {
@@ -609,7 +611,7 @@ function initTimeSheet() {
     const mVal = getClosestTimeValue(minsWrap);
     if (!hVal || !mVal) return;
     ui.timeDraft = `${hVal}:${mVal}`;
-    syncTimePickerSelection();
+    syncTimePickerSelection({ scroll: false });
   };
 
   let scrollTimer;
