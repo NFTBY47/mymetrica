@@ -433,6 +433,7 @@ button{
 }
 
 .glass-card__head{display:flex; align-items:center; justify-content:space-between; gap: 12px}
+.glass-card__head{margin-bottom: 10px}
 .glass-card__title{font-weight: 700; letter-spacing:-.01em}
 
 .add-btn{
@@ -805,8 +806,32 @@ html.is-sheet-open, html.is-sheet-open body{
 .pills-list{
   display:flex;
   flex-direction:column;
-  gap: 10px;
+  gap: 12px;
 }
+
+.pill-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 12px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(148,163,184,.16);
+  background: rgba(255,255,255,.85);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4);
+}
+
+.pill-row__main{min-width: 0}
+.pill-row__name{font-weight: 700; letter-spacing:-.01em}
+.pill-row__meta{font-size: 12px; color: var(--muted); margin-top: 2px}
+
+.pill-row__right{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+}
+
+.pill-row__time{font-weight: 700; color: var(--text); min-width: 50px; text-align:right}
 
 .date-field{
   width: 100%;
