@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Динамика — mymetrica</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <header class="page-top" aria-label="Верхняя панель">
+        <button class="back-btn" type="button" id="backBtn" aria-label="Назад">
+          <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="page-top__title">
+          <div class="page-top__name">Динамика</div>
+          <div class="page-top__sub">Графики по анализам</div>
+        </div>
+        <div class="page-top__spacer" aria-hidden="true"></div>
+      </header>
+
+      <main class="content dynamics-content" aria-label="Экран динамики">
+        <section class="glass-card" aria-label="Описание">
+          <div class="glass-card__title">Динамика по маркерам</div>
+          <div class="dyn-hint">Графики строятся только для показателей, которые встречаются минимум в двух анализах.</div>
+        </section>
+
+        <div class="dyn-empty" id="dynEmpty" hidden>Пока недостаточно данных для построения графиков</div>
+        <div class="dyn-list" id="dynList" aria-label="Графики маркеров"></div>
+
+        <div class="spacer" aria-hidden="true"></div>
+      </main>
+
+      <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <script src="scripts/dynamics.js"></script>
+  </body>
+</html>

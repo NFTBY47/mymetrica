@@ -133,24 +133,28 @@ function toast(message) {
 }
 
 function applyUserName() {
-  const el = $('#currentName');
-  if (!el) return;
+  const nameEl = $('#currentName');
+  const avatarEl = $('.avatar');
+  if (!nameEl) return;
 
-  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-  if (!tgUser) return;
+  const tg = window.Telegram?.WebApp;
+  if (!tg) return;
 
-  const first = (tgUser.first_name || '').trim();
-  const last = (tgUser.last_name || '').trim();
-  const full = [first, last].filter(Boolean).join(' ').trim();
-
-  if (full) {
-    el.textContent = full;
-    return;
-  }
-
-  const username = (tgUser.username || '').trim();
-  if (username) {
-    el.textContent = `@${username}`;
+  try {
+    const user = tg.initDataUnsafe?.user;
+    if (user?.first_name) {
+      nameEl.textContent = user.first_name;
+    }
+    
+    if (user?.photo_url && avatarEl) {
+      const img = document.createElement('img');
+      img.src = user.photo_url;
+      img.alt = user.first_name || 'Аватар';
+      img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 18px;';
+      avatarEl.innerHTML = '';
+      avatarEl.appendChild(img);
+    }
+  } catch {
   }
 }
 
@@ -304,7 +308,7 @@ function initActions() {
         window.location.href = `pills.html?date=${encodeURIComponent(state.selectedDateISO)}`;
         break;
       case 'dynamics':
-        toast('Динамика: скоро');
+        window.location.href = 'dynamics.html';
         break;
       case 'chat':
         toast('Чат ассистента: скоро');
@@ -314,6 +318,9 @@ function initActions() {
         break;
       case 'invite':
         toast('Приглашение в семью: скоро');
+        break;
+      case 'subscription':
+        toast('Подписка: скоро');
         break;
       default:
         toast('Скоро');
@@ -335,8 +342,13 @@ function applyTelegramTheme() {
   document.documentElement.classList.add('is-telegram');
 
   try {
-    tg.setBackgroundColor?.('#fbfcff');
-    tg.setHeaderColor?.('#fbfcff');
+    tg.setBackgroundColor?.('#fafbfc');
+    tg.setHeaderColor?.('#fafbfc');
+    
+    if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+      tg.MainButton?.hide();
+      tg.BackButton?.hide();
+    }
   } catch {
   }
 }

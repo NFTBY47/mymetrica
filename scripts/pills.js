@@ -80,11 +80,138 @@ const ui = {
   intervalUnit: 'days',
   intervalN: 2,
   times: [''],
+  returnTo: null,
+  timeDraft: '09:00',
+  timeEditingIdx: null,
   sheetMonthAnchor: null,
   sheetDraftISO: null,
   switchEls: null,
   editing: null,
 };
+
+function blurActive() {
+  const a = document.activeElement;
+  if (!a) return;
+  if (typeof a.blur === 'function') a.blur();
+}
+
+function isSheetOpen(id) {
+  const el = document.getElementById(id);
+  return Boolean(el && el.classList.contains('is-open'));
+}
+
+function syncSheetOpenClass() {
+  const open = ['dateSheet', 'addSheet', 'repeatSheet', 'timeSheet'].some((id) => isSheetOpen(id));
+  document.documentElement.classList.toggle('is-sheet-open', open);
+}
+
+function openSheet(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  blurActive();
+  el.classList.add('is-open');
+  el.setAttribute('aria-hidden', 'false');
+  syncSheetOpenClass();
+}
+
+function closeSheet(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  blurActive();
+  el.classList.remove('is-open');
+  el.setAttribute('aria-hidden', 'true');
+  syncSheetOpenClass();
+  setTimeout(() => {
+    window.scrollTo(0, 0);
+  }, 0);
+}
+
+function closeAllSheets({ keep = [] } = {}) {
+  ['dateSheet', 'addSheet', 'repeatSheet', 'timeSheet'].forEach((id) => {
+    if (keep.includes(id)) return;
+    closeSheet(id);
+  });
+}
+
+function initKeyboardFixes() {
+  const nameEl = $('#pillName');
+  const metaEl = $('#pillMeta');
+  [nameEl, metaEl].forEach((el) => {
+    if (!el) return;
+    el.addEventListener('focus', () => {
+      setTimeout(() => {
+        el.scrollIntoView?.({ block: 'center', inline: 'nearest' });
+      }, 250);
+    });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        blurActive();
+      }
+    });
+  });
+}
+
+function pad2(n) {
+  return String(n).padStart(2, '0');
+}
+
+function parseTime(value) {
+  const m = String(value || '').trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return { h: 9, mm: 0 };
+  const h = Math.max(0, Math.min(23, Number(m[1])));
+  const mm = Math.max(0, Math.min(59, Number(m[2])));
+  return { h: Number.isFinite(h) ? h : 9, mm: Number.isFinite(mm) ? mm : 0 };
+}
+
+function setTimeDraft(h, mm) {
+  ui.timeDraft = `${pad2(h)}:${pad2(mm)}`;
+}
+
+function syncTimePickerSelection() {
+  const { h, mm } = parseTime(ui.timeDraft);
+  const hoursWrap = $('#timeHours');
+  const minsWrap = $('#timeMinutes');
+  if (!hoursWrap || !minsWrap) return;
+
+  $all('.time-picker__item.is-selected', hoursWrap).forEach((x) => x.classList.remove('is-selected'));
+  $all('.time-picker__item.is-selected', minsWrap).forEach((x) => x.classList.remove('is-selected'));
+
+  const hEl = hoursWrap.querySelector(`.time-picker__item[data-value="${pad2(h)}"]`);
+  const mEl = minsWrap.querySelector(`.time-picker__item[data-value="${pad2(mm)}"]`);
+  if (hEl) hEl.classList.add('is-selected');
+  if (mEl) mEl.classList.add('is-selected');
+
+  hEl?.scrollIntoView?.({ block: 'nearest' });
+  mEl?.scrollIntoView?.({ block: 'nearest' });
+}
+
+function openTimeSheetFor(idx) {
+  const t = ui.times?.[idx] || '09:00';
+  const { h, mm } = parseTime(t);
+  setTimeDraft(h, mm);
+  ui.timeEditingIdx = idx;
+  if (isSheetOpen('addSheet')) {
+    ui.returnTo = 'addSheet';
+    closeSheet('addSheet');
+  }
+  closeAllSheets({ keep: ['timeSheet'] });
+  openSheet('timeSheet');
+  syncTimePickerSelection();
+}
+
+function openTimeSheetAdd() {
+  const base = ui.times?.[ui.times.length - 1] || '09:00';
+  const { h, mm } = parseTime(base);
+  setTimeDraft(h, mm);
+  ui.timeEditingIdx = null;
+  if (isSheetOpen('addSheet')) {
+    ui.returnTo = 'addSheet';
+    closeSheet('addSheet');
+  }
+  closeAllSheets({ keep: ['timeSheet'] });
+  openSheet('timeSheet');
+  syncTimePickerSelection();
+}
 
 function formatRepeatLabel() {
   switch (ui.repeatMode) {
@@ -127,21 +254,48 @@ function renderTimes() {
   const wrap = $('#timesWrap');
   if (!wrap) return;
   wrap.innerHTML = '';
-  const times = Array.isArray(ui.times) && ui.times.length > 0 ? ui.times : [''];
+
+  const times = Array.isArray(ui.times) && ui.times.length > 0 ? ui.times : ['09:00'];
+  ui.times = times;
+
   times.forEach((t, idx) => {
-    const input = document.createElement('input');
-    input.className = 'field__input';
-    input.type = 'time';
-    input.value = t || '';
-    input.dataset.idx = String(idx);
-    input.addEventListener('change', () => {
-      const i = Number(input.dataset.idx);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'time-btn';
+    btn.dataset.idx = String(idx);
+    btn.innerHTML = `<span class="time-btn__value"></span><span class="time-btn__remove" aria-hidden="true">×</span>`;
+    btn.querySelector('.time-btn__value').textContent = String(t || '').trim() || '09:00';
+
+    btn.addEventListener('click', (e) => {
+      const remove = e.target?.closest?.('.time-btn__remove');
+      const i = Number(btn.dataset.idx);
       if (!Number.isFinite(i)) return;
-      ui.times[i] = String(input.value || '').trim();
-      updateRepeatLabel();
+
+      if (remove) {
+        ui.times.splice(i, 1);
+        if (ui.times.length === 0) ui.times = ['09:00'];
+        renderTimes();
+        updateRepeatLabel();
+        Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
+        return;
+      }
+
+      openTimeSheetFor(i);
+      Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
     });
-    wrap.appendChild(input);
+
+    wrap.appendChild(btn);
   });
+
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'time-add-btn';
+  addBtn.textContent = '+ Добавить';
+  addBtn.addEventListener('click', () => {
+    openTimeSheetAdd();
+    Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
+  });
+  wrap.appendChild(addBtn);
 }
 
 function getTomorrowISO(fromISO) {
@@ -198,10 +352,8 @@ function updateSelectedDateField() {
 }
 
 function openDateSheet() {
-  const sheet = $('#dateSheet');
-  if (!sheet) return;
-  sheet.classList.add('is-open');
-  sheet.setAttribute('aria-hidden', 'false');
+  closeAllSheets();
+  openSheet('dateSheet');
   ui.sheetDraftISO = ui.selectedISO;
   const [y, m] = ui.selectedISO.split('-').map((x) => Number(x));
   ui.sheetMonthAnchor = new Date(y, m - 1, 1);
@@ -209,10 +361,12 @@ function openDateSheet() {
 }
 
 function closeDateSheet() {
-  const sheet = $('#dateSheet');
-  if (!sheet) return;
-  sheet.classList.remove('is-open');
-  sheet.setAttribute('aria-hidden', 'true');
+  closeSheet('dateSheet');
+
+  if (ui.returnTo === 'addSheet') {
+    openSheet('addSheet');
+    ui.returnTo = null;
+  }
 }
 
 function commitDateSheet() {
@@ -278,6 +432,10 @@ function initDateSheet() {
   const quickTomorrow = $('#quickTomorrow');
 
   openBtn?.addEventListener('click', () => {
+    if (isSheetOpen('addSheet')) {
+      ui.returnTo = 'addSheet';
+      closeSheet('addSheet');
+    }
     openDateSheet();
     Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
   });
@@ -318,6 +476,92 @@ function initDateSheet() {
     ui.sheetMonthAnchor = new Date(yy, mm - 1, 1);
     renderMonthSheet();
   });
+}
+
+function initTimeSheet() {
+  const sheet = $('#timeSheet');
+  const backdrop = $('#timeSheetBackdrop');
+  const closeBtn = $('#timeSheetClose');
+  const done = $('#timeSheetDone');
+  const hoursWrap = $('#timeHours');
+  const minsWrap = $('#timeMinutes');
+
+  if (!sheet || !hoursWrap || !minsWrap) return;
+
+  const build = () => {
+    hoursWrap.innerHTML = '';
+    minsWrap.innerHTML = '';
+
+    for (let h = 0; h <= 23; h += 1) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'time-picker__item';
+      b.dataset.value = pad2(h);
+      b.textContent = pad2(h);
+      b.addEventListener('click', () => {
+        const { mm } = parseTime(ui.timeDraft);
+        setTimeDraft(h, mm);
+        syncTimePickerSelection();
+        Telegram.WebApp?.HapticFeedback?.selectionChanged?.();
+      });
+      hoursWrap.appendChild(b);
+    }
+
+    const mins = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+    mins.forEach((m) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'time-picker__item';
+      b.dataset.value = pad2(m);
+      b.textContent = pad2(m);
+      b.addEventListener('click', () => {
+        const { h } = parseTime(ui.timeDraft);
+        setTimeDraft(h, m);
+        syncTimePickerSelection();
+        Telegram.WebApp?.HapticFeedback?.selectionChanged?.();
+      });
+      minsWrap.appendChild(b);
+    });
+  };
+
+  const close = () => {
+    closeSheet('timeSheet');
+    if (ui.returnTo === 'addSheet') {
+      openSheet('addSheet');
+      ui.returnTo = null;
+    }
+  };
+
+  const commit = () => {
+    const v = String(ui.timeDraft || '').trim();
+    if (!/^\d{2}:\d{2}$/.test(v)) {
+      close();
+      return;
+    }
+
+    if (!Array.isArray(ui.times)) ui.times = [];
+
+    if (ui.timeEditingIdx == null) {
+      ui.times.push(v);
+    } else {
+      const i = Number(ui.timeEditingIdx);
+      if (Number.isFinite(i) && i >= 0) ui.times[i] = v;
+    }
+
+    ui.times = ui.times.map((t) => String(t || '').trim()).filter(Boolean);
+    if (ui.times.length === 0) ui.times = ['09:00'];
+
+    renderTimes();
+    updateRepeatLabel();
+    Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
+    close();
+  };
+
+  build();
+
+  backdrop?.addEventListener('click', close);
+  closeBtn?.addEventListener('click', close);
+  done?.addEventListener('click', commit);
 }
 
 function addItemsForRule({
@@ -487,11 +731,9 @@ function renderList(iso) {
       updateSelectedDateField();
       updateDaySwitcherUI();
 
-      const addSheet = $('#addSheet');
-      if (addSheet) {
-        addSheet.classList.add('is-open');
-        addSheet.setAttribute('aria-hidden', 'false');
-      }
+      ui.returnTo = null;
+      closeAllSheets();
+      openSheet('addSheet');
 
       const nameEl = $('#pillName');
       const metaEl = $('#pillMeta');
@@ -575,11 +817,7 @@ function initForm(iso) {
       toast(ok ? 'Сохранено' : 'Не найдено');
       Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
 
-      const addSheet = $('#addSheet');
-      if (addSheet) {
-        addSheet.classList.remove('is-open');
-        addSheet.setAttribute('aria-hidden', 'true');
-      }
+      closeSheet('addSheet');
       return;
     }
 
@@ -603,11 +841,7 @@ function initForm(iso) {
     toast('Добавлено');
     Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
 
-    const addSheet = $('#addSheet');
-    if (addSheet) {
-      addSheet.classList.remove('is-open');
-      addSheet.setAttribute('aria-hidden', 'true');
-    }
+    closeSheet('addSheet');
   });
 }
 
@@ -618,7 +852,9 @@ function main() {
   updateHeaderDateLabel();
   updateSelectedDateField();
   initDateSheet();
+  initTimeSheet();
   initForm(ui.selectedISO);
+  initKeyboardFixes();
   renderList(ui.selectedISO);
 
   ui.switchEls = {
@@ -644,6 +880,7 @@ function main() {
   ui.switchEls.tabTomorrow?.addEventListener('click', () => setISO(tomorrowISO));
   ui.switchEls.tabDate?.addEventListener('click', () => {
     updateDaySwitcherUI();
+    ui.returnTo = null;
     openDateSheet();
   });
 
@@ -656,6 +893,7 @@ function main() {
 
   const openAdd = () => {
     if (!addSheet) return;
+    closeAllSheets();
     ui.editing = null;
     ui.repeatMode = 'once';
     ui.intervalUnit = 'days';
@@ -666,14 +904,11 @@ function main() {
     updateRepeatLabel();
     $('#pillName').value = '';
     $('#pillMeta').value = '';
-    addSheet.classList.add('is-open');
-    addSheet.setAttribute('aria-hidden', 'false');
+    openSheet('addSheet');
     Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
   };
   const closeAdd = () => {
-    if (!addSheet) return;
-    addSheet.classList.remove('is-open');
-    addSheet.setAttribute('aria-hidden', 'true');
+    closeSheet('addSheet');
   };
 
   addOpen?.addEventListener('click', openAdd);
@@ -700,16 +935,22 @@ function main() {
   };
 
   const openRepeatSheet = () => {
-    if (!repeatSheet) return;
-    repeatSheet.classList.add('is-open');
-    repeatSheet.setAttribute('aria-hidden', 'false');
+    if (isSheetOpen('addSheet')) {
+      ui.returnTo = 'addSheet';
+      closeSheet('addSheet');
+    }
+    closeAllSheets({ keep: ['repeatSheet'] });
+    openSheet('repeatSheet');
     if (repeatTitle) repeatTitle.textContent = 'Как часто вы его принимаете?';
     showRepeatStep('list');
   };
   const closeRepeatSheet = () => {
-    if (!repeatSheet) return;
-    repeatSheet.classList.remove('is-open');
-    repeatSheet.setAttribute('aria-hidden', 'true');
+    closeSheet('repeatSheet');
+
+    if (ui.returnTo === 'addSheet') {
+      openSheet('addSheet');
+      ui.returnTo = null;
+    }
   };
 
   openRepeat?.addEventListener('click', openRepeatSheet);

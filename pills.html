@@ -159,6 +159,25 @@
       </div>
     </div>
 
+    <div class="sheet" id="timeSheet" aria-hidden="true">
+      <div class="sheet__backdrop" id="timeSheetBackdrop" aria-hidden="true"></div>
+      <div class="sheet__panel" role="dialog" aria-modal="true" aria-label="Время">
+        <div class="sheet__grab" aria-hidden="true"></div>
+        <div class="sheet__head">
+          <div class="sheet__title">Время</div>
+          <button class="sheet__nav" type="button" id="timeSheetClose" aria-label="Закрыть">×</button>
+        </div>
+
+        <div class="time-picker" aria-label="Выбор времени">
+          <div class="time-picker__col" id="timeHours" aria-label="Часы"></div>
+          <div class="time-picker__sep" aria-hidden="true">:</div>
+          <div class="time-picker__col" id="timeMinutes" aria-label="Минуты"></div>
+        </div>
+
+        <button class="primary-btn" type="button" id="timeSheetDone">Готово</button>
+      </div>
+    </div>
+
     <script src="scripts/pills.js"></script>
   </body>
 </html>
