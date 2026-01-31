@@ -227,7 +227,7 @@ function setTimeDraft(h, mm) {
   ui.timeDraft = `${pad2(h)}:${pad2(mm)}`;
 }
 
-function syncTimePickerSelection({ scroll = true } = {}) {
+function syncTimePickerSelection() {
   const { h, mm } = parseTime(ui.timeDraft);
   const hoursWrap = $('#timeHours');
   const minsWrap = $('#timeMinutes');
@@ -240,11 +240,6 @@ function syncTimePickerSelection({ scroll = true } = {}) {
   const mEl = minsWrap.querySelector(`.time-picker__item[data-value="${pad2(mm)}"]`);
   if (hEl) hEl.classList.add('is-selected');
   if (mEl) mEl.classList.add('is-selected');
-
-  if (scroll) {
-    hEl?.scrollIntoView?.({ block: 'nearest' });
-    mEl?.scrollIntoView?.({ block: 'nearest' });
-  }
 }
 
 function getClosestTimeValue(container) {
@@ -606,20 +601,6 @@ function initTimeSheet() {
     });
   };
 
-  const syncScrollSelection = () => {
-    const hVal = getClosestTimeValue(hoursWrap);
-    const mVal = getClosestTimeValue(minsWrap);
-    if (!hVal || !mVal) return;
-    ui.timeDraft = `${hVal}:${mVal}`;
-    syncTimePickerSelection({ scroll: false });
-  };
-
-  let scrollTimer;
-  const onScroll = () => {
-    clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(syncScrollSelection, 80);
-  };
-
   const close = () => {
     closeSheet('timeSheet');
     if (ui.returnTo === 'addSheet') {
@@ -654,9 +635,6 @@ function initTimeSheet() {
   };
 
   build();
-
-  hoursWrap.addEventListener('scroll', onScroll, { passive: true });
-  minsWrap.addEventListener('scroll', onScroll, { passive: true });
 
   backdrop?.addEventListener('click', close);
   closeBtn?.addEventListener('click', close);
