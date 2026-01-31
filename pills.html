@@ -75,6 +75,22 @@
       </div>
     </div>
 
+    <!-- Delete Sheet -->
+    <div class="sheet" id="deleteSheet" aria-hidden="true">
+      <div class="sheet__backdrop" id="deleteSheetBackdrop" aria-hidden="true"></div>
+      <div class="sheet__panel" role="dialog" aria-modal="true" aria-label="Удаление">
+        <div class="sheet__grab" aria-hidden="true"></div>
+        <div class="sheet__head">
+          <div class="sheet__title">Удаление</div>
+        </div>
+        <div class="action-list">
+          <button class="action-row" type="button" id="deleteDayBtn">Удалить только на этот день</button>
+          <button class="action-row" type="button" id="deleteAllBtn" style="color: #ef4444;">Удалить весь курс</button>
+          <button class="action-row" type="button" id="deleteCancelBtn">Отмена</button>
+        </div>
+      </div>
+    </div>
+
     <div class="sheet" id="addSheet" aria-hidden="true">
       <div class="sheet__backdrop" id="addSheetBackdrop" aria-hidden="true"></div>
       <div class="sheet__panel" role="dialog" aria-modal="true" aria-label="Добавить приём">

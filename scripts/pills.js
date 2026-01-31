@@ -35,6 +35,19 @@ function removeCourse({ name, meta }) {
   return removed;
 }
 
+function removePillAtDate({ iso, id }) {
+  const data = loadPills();
+  const arr = Array.isArray(data[iso]) ? data[iso] : [];
+  const idx = arr.findIndex((x) => x && x.id === id);
+  if (idx < 0) return false;
+
+  arr.splice(idx, 1);
+  if (arr.length === 0) delete data[iso];
+  else data[iso] = arr;
+  savePills(data);
+  return true;
+}
+
 function $all(sel, root = document) {
   return Array.from(root.querySelectorAll(sel));
 }
@@ -118,6 +131,8 @@ const ui = {
   sheetDraftISO: null,
   switchEls: null,
   editing: null,
+  deleting: null,
+  updateTimePicker: null,
 };
 
 const SHEET_ANIM_MS = 220;
@@ -227,37 +242,8 @@ function setTimeDraft(h, mm) {
   ui.timeDraft = `${pad2(h)}:${pad2(mm)}`;
 }
 
-function syncTimePickerSelection() {
-  const { h, mm } = parseTime(ui.timeDraft);
-  const hoursWrap = $('#timeHours');
-  const minsWrap = $('#timeMinutes');
-  if (!hoursWrap || !minsWrap) return;
-
-  $all('.time-picker__item.is-selected', hoursWrap).forEach((x) => x.classList.remove('is-selected'));
-  $all('.time-picker__item.is-selected', minsWrap).forEach((x) => x.classList.remove('is-selected'));
-
-  const hEl = hoursWrap.querySelector(`.time-picker__item[data-value="${pad2(h)}"]`);
-  const mEl = minsWrap.querySelector(`.time-picker__item[data-value="${pad2(mm)}"]`);
-  if (hEl) hEl.classList.add('is-selected');
-  if (mEl) mEl.classList.add('is-selected');
-}
-
 function getClosestTimeValue(container) {
-  const items = $all('.time-picker__item', container);
-  if (items.length === 0) return null;
-  const rect = container.getBoundingClientRect();
-  const centerY = rect.top + rect.height / 2;
-  let best = null;
-  let bestDist = Infinity;
-  items.forEach((item) => {
-    const r = item.getBoundingClientRect();
-    const dist = Math.abs(r.top + r.height / 2 - centerY);
-    if (dist < bestDist) {
-      bestDist = dist;
-      best = item;
-    }
-  });
-  return best?.dataset?.value || null;
+  return null;
 }
 
 function openTimeSheetFor(idx) {
@@ -271,7 +257,7 @@ function openTimeSheetFor(idx) {
   }
   closeAllSheets({ keep: ['timeSheet'] });
   openSheet('timeSheet', { force: true });
-  syncTimePickerSelection();
+  ui.updateTimePicker?.(h, mm);
 }
 
 function openTimeSheetAdd() {
@@ -285,7 +271,7 @@ function openTimeSheetAdd() {
   }
   closeAllSheets({ keep: ['timeSheet'] });
   openSheet('timeSheet', { force: true });
-  syncTimePickerSelection();
+  ui.updateTimePicker?.(h, mm);
 }
 
 function formatRepeatLabel() {
@@ -565,39 +551,72 @@ function initTimeSheet() {
 
   if (!sheet || !hoursWrap || !minsWrap) return;
 
-  const build = () => {
-    hoursWrap.innerHTML = '';
-    minsWrap.innerHTML = '';
+  const ITEM_H = 40;
 
-    for (let h = 0; h <= 23; h += 1) {
+  const setupColumn = (container, maxVal, currentVal, onUpdate) => {
+    container.innerHTML = '';
+    // Generate 3 sets for infinite scroll illusion: [0..max-1] * 3
+    const total = maxVal * 3;
+    for (let i = 0; i < total; i++) {
+      const v = i % maxVal;
       const b = document.createElement('button');
-      b.type = 'button';
       b.className = 'time-picker__item';
-      b.dataset.value = pad2(h);
-      b.textContent = pad2(h);
+      b.textContent = pad2(v);
+      b.type = 'button';
       b.addEventListener('click', () => {
-        const { mm } = parseTime(ui.timeDraft);
-        setTimeDraft(h, mm);
-        syncTimePickerSelection();
-        Telegram.WebApp?.HapticFeedback?.selectionChanged?.();
+         container.scrollTo({ top: i * ITEM_H, behavior: 'smooth' });
       });
-      hoursWrap.appendChild(b);
+      container.appendChild(b);
     }
+    
+    const singleSetH = maxVal * ITEM_H;
+    const startIdx = maxVal + currentVal; 
+    container.scrollTop = startIdx * ITEM_H;
 
-    const mins = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
-    mins.forEach((m) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'time-picker__item';
-      b.dataset.value = pad2(m);
-      b.textContent = pad2(m);
-      b.addEventListener('click', () => {
-        const { h } = parseTime(ui.timeDraft);
-        setTimeDraft(h, m);
-        syncTimePickerSelection();
+    let lastIdx = currentVal;
+    
+    // Initial selection
+    const items = container.children;
+    if(items[startIdx]) items[startIdx].classList.add('is-selected');
+
+    const onScroll = () => {
+      let st = container.scrollTop;
+      
+      // Infinite jump
+      if (st < singleSetH) {
+        st += singleSetH;
+        container.scrollTop = st;
+      } else if (st >= singleSetH * 2) {
+        st -= singleSetH;
+        container.scrollTop = st;
+      }
+
+      const idx = Math.round(st / ITEM_H);
+      const val = idx % maxVal;
+
+      const prev = container.querySelector('.is-selected');
+      if (prev) prev.classList.remove('is-selected');
+      
+      if (items[idx]) items[idx].classList.add('is-selected');
+
+      if (val !== lastIdx) {
+        lastIdx = val;
+        onUpdate(val);
         Telegram.WebApp?.HapticFeedback?.selectionChanged?.();
-      });
-      minsWrap.appendChild(b);
+      }
+    };
+
+    container.onscroll = onScroll;
+  };
+
+  ui.updateTimePicker = (h, m) => {
+    setupColumn(hoursWrap, 24, h, (val) => {
+      const { mm } = parseTime(ui.timeDraft);
+      setTimeDraft(val, mm);
+    });
+    setupColumn(minsWrap, 60, m, (val) => {
+      const { h } = parseTime(ui.timeDraft);
+      setTimeDraft(h, val);
     });
   };
 
@@ -633,8 +652,6 @@ function initTimeSheet() {
     Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
     close();
   };
-
-  build();
 
   backdrop?.addEventListener('click', close);
   closeBtn?.addEventListener('click', close);
@@ -732,6 +749,33 @@ function updatePillItem({ iso, id, patch }) {
   return true;
 }
 
+function removePillAtDate({ iso, id }) {
+  const data = loadPills();
+  const arr = Array.isArray(data[iso]) ? data[iso] : [];
+  const idx = arr.findIndex((x) => x && x.id === id);
+  if (idx < 0) return false;
+  arr.splice(idx, 1);
+  data[iso] = arr;
+  savePills(data);
+  return true;
+}
+
+function removeCourse({ name, meta }) {
+  const data = loadPills();
+  let n = 0;
+  Object.keys(data).forEach((iso) => {
+    const arr = Array.isArray(data[iso]) ? data[iso] : [];
+    const idx = arr.findIndex((x) => x && x.name === name && x.meta === meta);
+    if (idx >= 0) {
+      arr.splice(idx, 1);
+      data[iso] = arr;
+      n += 1;
+    }
+  });
+  savePills(data);
+  return n;
+}
+
 function renderList(iso) {
   const listEl = $('#pillsList');
   const emptyEl = $('#pillsEmpty');
@@ -785,9 +829,8 @@ function renderList(iso) {
     row.querySelector('.pill-row__time').textContent = p.time || '';
 
     row.querySelector('.trash-btn')?.addEventListener('click', () => {
-      const removed = removeCourse({ name: p.name, meta: p.meta });
-      renderList(iso);
-      toast(removed > 0 ? 'Удалено' : 'Не найдено');
+      ui.deleting = { iso, id: p.id, name: p.name, meta: p.meta };
+      openSheet('deleteSheet');
       Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
     });
 
@@ -914,6 +957,37 @@ function initForm(iso) {
   });
 }
 
+function initDeleteSheet() {
+  const sheet = $('#deleteSheet');
+  const backdrop = $('#deleteSheetBackdrop');
+  const dayBtn = $('#deleteDayBtn');
+  const allBtn = $('#deleteAllBtn');
+  const cancelBtn = $('#deleteCancelBtn');
+
+  const close = () => closeSheet('deleteSheet');
+
+  backdrop?.addEventListener('click', close);
+  cancelBtn?.addEventListener('click', close);
+
+  dayBtn?.addEventListener('click', () => {
+    if (ui.deleting) {
+      removePillAtDate({ iso: ui.deleting.iso, id: ui.deleting.id });
+      renderList(ui.deleting.iso);
+      toast('Удалено на этот день');
+    }
+    close();
+  });
+
+  allBtn?.addEventListener('click', () => {
+    if (ui.deleting) {
+      const n = removeCourse({ name: ui.deleting.name, meta: ui.deleting.meta });
+      renderList(ui.deleting.iso);
+      toast(n > 0 ? 'Курс удалён' : 'Ошибка удаления');
+    }
+    close();
+  });
+}
+
 function main() {
   ui.selectedISO = getSelectedISO();
   ui.todayISO = toISODate(new Date());
@@ -923,6 +997,7 @@ function main() {
   initDateSheet();
   initTimeSheet();
   initForm(ui.selectedISO);
+  initDeleteSheet();
   initKeyboardFixes();
   renderList(ui.selectedISO);
 
