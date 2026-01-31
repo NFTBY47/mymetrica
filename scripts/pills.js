@@ -484,6 +484,7 @@ function renderMonthSheet() {
 function initDateSheet() {
   const openBtn = $('#openDatePicker');
   const backdrop = $('#dateSheetBackdrop');
+  const closeBtn = $('#dateSheetClose');
   const done = $('#dateSheetDone');
   const prev = $('#monthPrev');
   const next = $('#monthNext');
@@ -500,6 +501,7 @@ function initDateSheet() {
     Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
   });
   backdrop?.addEventListener('click', closeDateSheet);
+  closeBtn?.addEventListener('click', closeDateSheet);
   done?.addEventListener('click', commitDateSheet);
 
   prev?.addEventListener('click', () => {

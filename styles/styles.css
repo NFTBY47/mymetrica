@@ -723,16 +723,16 @@ button{
   position:relative;
   width: min(520px, 100%);
   border-radius: 22px;
-  background: rgba(255,255,255,.82);
-  border: 1px solid rgba(255,255,255,.28);
+  background: rgba(255,255,255,.96);
+  border: 1px solid rgba(148,163,184,.18);
   box-shadow: 0 22px 60px rgba(14,19,32,.22);
   padding: 10px 12px 12px;
   max-height: calc(100svh - var(--safe-top) - 18px);
   overflow: auto;
   transform: translateY(14px);
   transition: transform .18s ease;
-  backdrop-filter: blur(26px) saturate(180%);
-  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
 }
 
 .sheet.is-open .sheet__panel{transform: translateY(0)}
@@ -922,7 +922,7 @@ html.is-sheet-open, html.is-sheet-open body{
   height: 50px;
   border-radius: 16px;
   border: 1px solid var(--glass-stroke-soft);
-  background: rgba(255,255,255,.35);
+  background: rgba(255,255,255,.72);
   text-align:left;
   padding: 0 14px;
   font-weight: 700;
@@ -931,35 +931,45 @@ html.is-sheet-open, html.is-sheet-open body{
 .action-row:active{transform: translateY(1px)}
 
 .picker-title{font-weight: 700; margin: 6px 0 10px}
-.num-picker{display:flex; gap: 10px; overflow:auto; padding-bottom: 2px}
+.num-picker{display:flex; flex-wrap: wrap; gap: 8px; overflow: visible; padding-bottom: 2px}
 .num-picker::-webkit-scrollbar{display:none}
+
+.num{
+  height: 36px;
+  min-width: 44px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148,163,184,.18);
+  background: rgba(255,255,255,.80);
+  color: var(--text);
+  font-weight: 700;
+}
+.num:active{transform: translateY(1px)}
+.num.is-selected{border-color: rgba(99,102,241,.40); background: rgba(99,102,241,.10); color: var(--accent)}
 
 .time-picker{
   display:grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: 12px;
+  gap: 10px;
   align-items:center;
-  padding: 20px 0;
+  padding: 12px 0;
 }
 
-.time-picker__col{
-  display:flex;
-  flex-direction:column;
-  gap: 8px;
-  max-height: 200px;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+#timeHours,
+#timeMinutes{
+  display:grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
 }
-.time-picker__col::-webkit-scrollbar{display:none}
 
 .time-picker__item{
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid transparent;
-  background: transparent;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(148,163,184,.18);
+  background: rgba(255,255,255,.70);
   font-weight: 600;
-  color: var(--muted);
+  font-size: 12px;
+  color: rgba(30,41,59,.78);
   transition: all .15s ease;
 }
 
@@ -971,10 +981,23 @@ html.is-sheet-open, html.is-sheet-open body{
 }
 
 .time-picker__sep{
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--muted);
 }
+
+#repeatSheet .sheet__head{
+  display:grid;
+  grid-template-columns: 40px 1fr 40px;
+  justify-content: unset;
+}
+
+#repeatSheet .sheet__title{
+  text-align:center;
+}
+
+#repeatSheet #repeatBack{justify-self:start}
+#repeatSheet #repeatClose{justify-self:end}
 
 /* Medcard Styles */
 .medcard-content{
