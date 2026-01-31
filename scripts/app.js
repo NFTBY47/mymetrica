@@ -287,7 +287,13 @@ function initActions() {
         toast('Меню: скоро');
         break;
       case 'support':
-        toast('Поддержка: скоро');
+        if (window.Telegram?.WebApp?.openTelegramLink) {
+          Telegram.WebApp.openTelegramLink('https://t.me/mymetrica_help');
+        } else if (window.Telegram?.WebApp?.openLink) {
+          Telegram.WebApp.openLink('https://t.me/mymetrica_help');
+        } else {
+          window.open('https://t.me/mymetrica_help', '_blank');
+        }
         break;
       case 'share':
         toast('Поделиться: скоро');
