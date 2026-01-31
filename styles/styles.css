@@ -302,7 +302,7 @@ button{
   margin-top: 2px;
 }
 
-.day.has-pills .day__dot{background: var(--accent2)}
+.day.has-pills .day__dot{background: #22c55e}
 
 .day.is-today{
   border-color: rgba(var(--accent2-rgb), .28);

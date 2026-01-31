@@ -4,6 +4,37 @@ function $(sel, root = document) {
   return root.querySelector(sel);
 }
 
+function removeCourse({ name, meta }) {
+  const n = String(name || '').trim();
+  const m = String(meta || '').trim();
+  if (!n) return 0;
+
+  const data = loadPills();
+  let removed = 0;
+
+  Object.keys(data).forEach((iso) => {
+    const arr = Array.isArray(data[iso]) ? data[iso] : [];
+    if (arr.length === 0) {
+      delete data[iso];
+      return;
+    }
+
+    const next = arr.filter((x) => {
+      const sameName = String(x?.name || '').trim() === n;
+      const sameMeta = String(x?.meta || '').trim() === m;
+      const keep = !(sameName && sameMeta);
+      if (!keep) removed += 1;
+      return keep;
+    });
+
+    if (next.length === 0) delete data[iso];
+    else data[iso] = next;
+  });
+
+  savePills(data);
+  return removed;
+}
+
 function $all(sel, root = document) {
   return Array.from(root.querySelectorAll(sel));
 }
@@ -89,6 +120,25 @@ const ui = {
   editing: null,
 };
 
+const SHEET_ANIM_MS = 220;
+let sheetLockUntil = 0;
+let pendingSheetOp = null;
+
+function isSheetLocked() {
+  return Date.now() < sheetLockUntil;
+}
+
+function lockSheets() {
+  sheetLockUntil = Date.now() + SHEET_ANIM_MS;
+  setTimeout(() => {
+    if (Date.now() < sheetLockUntil) return;
+    if (!pendingSheetOp) return;
+    const op = pendingSheetOp;
+    pendingSheetOp = null;
+    op();
+  }, SHEET_ANIM_MS + 20);
+}
+
 function blurActive() {
   const a = document.activeElement;
   if (!a) return;
@@ -105,18 +155,28 @@ function syncSheetOpenClass() {
   document.documentElement.classList.toggle('is-sheet-open', open);
 }
 
-function openSheet(id) {
+function openSheet(id, { force = false } = {}) {
   const el = document.getElementById(id);
   if (!el) return;
+  if (!force && isSheetLocked()) {
+    pendingSheetOp = () => openSheet(id, { force: true });
+    return;
+  }
+  if (!force) lockSheets();
   blurActive();
   el.classList.add('is-open');
   el.setAttribute('aria-hidden', 'false');
   syncSheetOpenClass();
 }
 
-function closeSheet(id) {
+function closeSheet(id, { force = false } = {}) {
   const el = document.getElementById(id);
   if (!el) return;
+  if (!force && isSheetLocked()) {
+    pendingSheetOp = () => closeSheet(id, { force: true });
+    return;
+  }
+  if (!force) lockSheets();
   blurActive();
   el.classList.remove('is-open');
   el.setAttribute('aria-hidden', 'true');
@@ -126,10 +186,10 @@ function closeSheet(id) {
   }, 0);
 }
 
-function closeAllSheets({ keep = [] } = {}) {
+function closeAllSheets({ keep = [], force = true } = {}) {
   ['dateSheet', 'addSheet', 'repeatSheet', 'timeSheet'].forEach((id) => {
     if (keep.includes(id)) return;
-    closeSheet(id);
+    closeSheet(id, { force });
   });
 }
 
@@ -192,10 +252,10 @@ function openTimeSheetFor(idx) {
   ui.timeEditingIdx = idx;
   if (isSheetOpen('addSheet')) {
     ui.returnTo = 'addSheet';
-    closeSheet('addSheet');
+    closeSheet('addSheet', { force: true });
   }
   closeAllSheets({ keep: ['timeSheet'] });
-  openSheet('timeSheet');
+  openSheet('timeSheet', { force: true });
   syncTimePickerSelection();
 }
 
@@ -206,10 +266,10 @@ function openTimeSheetAdd() {
   ui.timeEditingIdx = null;
   if (isSheetOpen('addSheet')) {
     ui.returnTo = 'addSheet';
-    closeSheet('addSheet');
+    closeSheet('addSheet', { force: true });
   }
   closeAllSheets({ keep: ['timeSheet'] });
-  openSheet('timeSheet');
+  openSheet('timeSheet', { force: true });
   syncTimePickerSelection();
 }
 
@@ -364,7 +424,7 @@ function closeDateSheet() {
   closeSheet('dateSheet');
 
   if (ui.returnTo === 'addSheet') {
-    openSheet('addSheet');
+    openSheet('addSheet', { force: true });
     ui.returnTo = null;
   }
 }
@@ -527,7 +587,7 @@ function initTimeSheet() {
   const close = () => {
     closeSheet('timeSheet');
     if (ui.returnTo === 'addSheet') {
-      openSheet('addSheet');
+      openSheet('addSheet', { force: true });
       ui.returnTo = null;
     }
   };
@@ -708,18 +768,10 @@ function renderList(iso) {
     row.querySelector('.pill-row__time').textContent = p.time || '';
 
     row.querySelector('.trash-btn')?.addEventListener('click', () => {
-      const fresh = loadPills();
-      const arr = Array.isArray(fresh[iso]) ? fresh[iso] : [];
-      const idx = arr.findIndex((x) => x && x.id === p.id);
-      if (idx >= 0) {
-        arr.splice(idx, 1);
-        if (arr.length === 0) delete fresh[iso];
-        else fresh[iso] = arr;
-        savePills(fresh);
-        renderList(iso);
-        toast('Удалено');
-        Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
-      }
+      const removed = removeCourse({ name: p.name, meta: p.meta });
+      renderList(iso);
+      toast(removed > 0 ? 'Удалено' : 'Не найдено');
+      Telegram.WebApp?.HapticFeedback?.impactOccurred?.('light');
     });
 
     row.querySelector('.edit-btn')?.addEventListener('click', () => {
@@ -917,6 +969,7 @@ function main() {
 
   const repeatSheet = $('#repeatSheet');
   const repeatBackdrop = $('#repeatSheetBackdrop');
+  const repeatBack = $('#repeatBack');
   const repeatClose = $('#repeatClose');
   const openRepeat = $('#openRepeat');
   const stepList = $('#repeatStepList');
@@ -932,12 +985,13 @@ function main() {
     stepList.hidden = which !== 'list';
     stepInterval.hidden = which !== 'interval';
     stepTimes.hidden = which !== 'times';
+    if (repeatBack) repeatBack.hidden = which === 'list';
   };
 
   const openRepeatSheet = () => {
     if (isSheetOpen('addSheet')) {
       ui.returnTo = 'addSheet';
-      closeSheet('addSheet');
+      closeSheet('addSheet', { force: true });
     }
     closeAllSheets({ keep: ['repeatSheet'] });
     openSheet('repeatSheet');
@@ -948,13 +1002,18 @@ function main() {
     closeSheet('repeatSheet');
 
     if (ui.returnTo === 'addSheet') {
-      openSheet('addSheet');
+      openSheet('addSheet', { force: true });
       ui.returnTo = null;
     }
   };
 
   openRepeat?.addEventListener('click', openRepeatSheet);
   repeatBackdrop?.addEventListener('click', closeRepeatSheet);
+  repeatBack?.addEventListener('click', () => {
+    if (repeatTitle) repeatTitle.textContent = 'Как часто вы его принимаете?';
+    showRepeatStep('list');
+    Telegram.WebApp?.HapticFeedback?.selectionChanged?.();
+  });
   repeatClose?.addEventListener('click', closeRepeatSheet);
 
   const buildPicker = (max, selected) => {
