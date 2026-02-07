@@ -87,6 +87,24 @@
         document.documentElement.style.setProperty('--tg-content-left', '0px');
         console.log('Medcard: Set fallback CSS vars');
       }
+
+      // Telegram BackButton setup
+      if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        if (typeof tg.BackButton === 'object') {
+          tg.BackButton.show();
+          tg.BackButton.onClick(() => {
+            window.location.href = 'index.html';
+          });
+        }
+        // Set colors for consistency
+        if (typeof tg.setHeaderColor === 'function') {
+          tg.setHeaderColor('#eef2f6');
+        }
+        if (typeof tg.setBackgroundColor === 'function') {
+          tg.setBackgroundColor('#e2e6ed');
+        }
+      }
     </script>
   </head>
   <body>
