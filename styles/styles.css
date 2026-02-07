@@ -631,7 +631,7 @@ html.is-telegram .back-btn{
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,.15);
   padding-bottom: 0;
-  z-index: 10;
+  z-index: 101;
 }
 
 .profile-hero__bg{
@@ -660,7 +660,18 @@ html.is-telegram .back-btn{
 
 .profile-hero__name{font-weight: 800; font-size: 22px; letter-spacing:-.02em; color: #000}
 .profile-hero__hint{font-size: 14px; color: rgba(60,60,67,.6); margin-top: 2px; font-weight: 600}
-.profile-hero__actions{display:flex; gap: 12px; align-items:center}
+.profile-hero__actions{display:flex; gap: 12px; align-items:center; position: relative; z-index: 102}
+
+/* Ensure decode page header works correctly */
+.decode-content .profile-hero,
+.decode .profile-hero {
+  z-index: 101 !important;
+}
+
+.decode-content .profile-hero__actions,
+.decode .profile-hero__actions {
+  z-index: 102 !important;
+}
 
 .menu{
   display:flex;
