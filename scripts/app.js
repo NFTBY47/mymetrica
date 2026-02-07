@@ -159,7 +159,6 @@ function applyUserName() {
 }
 
 function initHeader() {
-  console.log('initHeader called');
   // Apply user data
   applyUserName();
   
@@ -169,11 +168,9 @@ function initHeader() {
     if (!target) return;
 
     const action = target.dataset.action;
-    console.log('Header button clicked:', action);
 
     switch (action) {
       case 'support':
-        console.log('Opening support chat');
         if (window.Telegram?.WebApp?.openTelegramLink) {
           Telegram.WebApp.openTelegramLink('https://t.me/mymetrica_help');
         } else if (window.Telegram?.WebApp?.openLink) {
@@ -183,7 +180,6 @@ function initHeader() {
         }
         break;
       case 'notifications':
-        console.log('Showing notifications toast');
         toast('Пока нет уведомлений');
         break;
       default:
