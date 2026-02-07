@@ -75,22 +75,8 @@
         if (typeof tg.onEvent === 'function') {
           tg.onEvent('viewportChanged', goFullscreen);
         }
-      })();
 
-      // Fallback for non-Telegram environment
-      if (!window.Telegram?.WebApp) {
-        document.documentElement.style.setProperty('--safe-top', '0px');
-        document.documentElement.style.setProperty('--safe-bottom', '0px');
-        document.documentElement.style.setProperty('--tg-content-top', '52px');
-        document.documentElement.style.setProperty('--tg-content-right', '0px');
-        document.documentElement.style.setProperty('--tg-content-bottom', '0px');
-        document.documentElement.style.setProperty('--tg-content-left', '0px');
-        console.log('Decode: Set fallback CSS vars');
-      }
-
-      // Telegram BackButton setup
-      if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
+        // Telegram BackButton setup - ВНУТРИ основного блока
         if (typeof tg.BackButton === 'object') {
           tg.BackButton.show();
           tg.BackButton.onClick(() => {
@@ -104,6 +90,17 @@
         if (typeof tg.setBackgroundColor === 'function') {
           tg.setBackgroundColor('#e2e6ed');
         }
+      })();
+
+      // Fallback for non-Telegram environment
+      if (!window.Telegram?.WebApp) {
+        document.documentElement.style.setProperty('--safe-top', '0px');
+        document.documentElement.style.setProperty('--safe-bottom', '0px');
+        document.documentElement.style.setProperty('--tg-content-top', '52px');
+        document.documentElement.style.setProperty('--tg-content-right', '0px');
+        document.documentElement.style.setProperty('--tg-content-bottom', '0px');
+        document.documentElement.style.setProperty('--tg-content-left', '0px');
+        console.log('Decode: Set fallback CSS vars');
       }
     </script>
   </head>
