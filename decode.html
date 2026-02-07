@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no">
+    <title>Расшифровка — mymetrica</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+      (() => {
+        const tg = window.Telegram?.WebApp;
+        if (!tg) return;
+
+        const ua = navigator.userAgent || '';
+        const isRealTelegram =
+          /Telegram/i.test(ua) ||
+          (typeof tg.platform === 'string' && tg.platform !== 'unknown') ||
+          (typeof tg.initData === 'string' && tg.initData.length > 0) ||
+          Boolean(tg.initDataUnsafe?.user);
+        if (!isRealTelegram) return;
+
+        document.documentElement.classList.add('is-telegram');
+
+        const setVars = () => {
+          const raw = Number(tg.viewportHeight);
+          const h = Number.isFinite(raw) ? raw : 0;
+          const nextH = h >= 200 ? h : window.innerHeight;
+          document.documentElement.style.setProperty('--tg-viewport-height', `${nextH}px`);
+
+          const top = tg.safeAreaInset?.top;
+          const bottom = tg.safeAreaInset?.bottom;
+          const safeTop = typeof top === 'number' ? top : 0;
+          const safeBottom = typeof bottom === 'number' ? bottom : 0;
+          if (typeof top === 'number') document.documentElement.style.setProperty('--safe-top', `${safeTop}px`);
+          if (typeof bottom === 'number') document.documentElement.style.setProperty('--safe-bottom', `${safeBottom}px`);
+
+          const ct = tg.contentSafeAreaInset?.top;
+          const cr = tg.contentSafeAreaInset?.right;
+          const cb = tg.contentSafeAreaInset?.bottom;
+          const cl = tg.contentSafeAreaInset?.left;
+
+          const topInset = typeof ct === 'number' && ct > 0 ? ct : safeTop + 52;
+          const rightInset = typeof cr === 'number' && cr > 0 ? cr : 0;
+          const bottomInset = typeof cb === 'number' && cb > 0 ? cb : safeBottom;
+          const leftInset = typeof cl === 'number' && cl > 0 ? cl : 0;
+
+          document.documentElement.style.setProperty('--tg-content-top', `${topInset}px`);
+          document.documentElement.style.setProperty('--tg-content-right', `${rightInset}px`);
+          document.documentElement.style.setProperty('--tg-content-bottom', `${bottomInset}px`);
+          document.documentElement.style.setProperty('--tg-content-left', `${leftInset}px`);
+        };
+
+        const goFullscreen = () => {
+          try {
+            if (typeof tg.expand === 'function') tg.expand();
+
+            if (
+              typeof tg.requestFullscreen === 'function' &&
+              (typeof tg.isVersionAtLeast !== 'function' || tg.isVersionAtLeast('6.1'))
+            ) {
+              tg.requestFullscreen();
+            }
+          } catch {
+          }
+          setVars();
+        };
+
+        tg.ready?.();
+        goFullscreen();
+        setTimeout(goFullscreen, 0);
+        setTimeout(goFullscreen, 60);
+        setTimeout(goFullscreen, 300);
+
+        if (typeof tg.onEvent === 'function') {
+          tg.onEvent('viewportChanged', goFullscreen);
+        }
+      })();
+
+      // Fallback for non-Telegram environment
+      if (!window.Telegram?.WebApp) {
+        document.documentElement.style.setProperty('--safe-top', '0px');
+        document.documentElement.style.setProperty('--safe-bottom', '0px');
+        document.documentElement.style.setProperty('--tg-content-top', '52px');
+        document.documentElement.style.setProperty('--tg-content-right', '0px');
+        document.documentElement.style.setProperty('--tg-content-bottom', '0px');
+        document.documentElement.style.setProperty('--tg-content-left', '0px');
+        console.log('Decode: Set fallback CSS vars');
+      }
+    </script>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <section class="profile-hero" aria-label="Аккаунт">
+        <div class="profile-hero__bg"></div>
+        <div class="profile-hero__content">
+          <div class="avatar" role="img" aria-label="Аватар">
+            <svg class="avatar__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 12a3.6 3.6 0 100-7.2 3.6 3.6 0 000 7.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M5.5 20a6.5 6.5 0 0113 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="profile-hero__meta">
+            <div class="profile-hero__name" id="currentName">Пользователь</div>
+            <div class="profile-hero__hint">Расшифровка анализов</div>
+          </div>
+          <div class="profile-hero__actions">
+            <button class="round-btn" type="button" data-action="support" aria-label="Поддержка">
+              <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 12a8 8 0 0116 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M6 12v4a2 2 0 01-2-2v-1a2 2 0 012-2zm12 0v4a2 2 0 002-2v-1a2 2 0 00-2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="round-btn" type="button" data-action="notifications" aria-label="Уведомления">
+              <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M13.73 21a2 2 0 01-3.46 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <main class="content decode-content" aria-label="Экран расшифровки">
+        <div class="decode-empty">
+          <div class="ai-visual">
+            <div class="ai-visual__card">
+              <svg class="ai-visual__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 2v6h6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 13h2l1-2 2 4 1-2h2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 17H8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div class="ai-visual__scan"></div>
+            </div>
+          </div>
+          
+          <div class="decode-empty__content">
+            <div class="decode-empty__text">
+              Загрузите фото или PDF с результатами анализов, и я расшифрую их простым языком.
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <div class="quick-actions">
+        <div class="quick-actions__scroll">
+          <button class="quick-chip">Что такое mymetrica?</button>
+          <button class="quick-chip">Как добавить анализ?</button>
+          <button class="quick-chip">Безопасность данных</button>
+        </div>
+      </div>
+
+      <div class="chat-bar">
+        <div class="chat-bar__inner">
+          <label class="attach-btn" aria-label="Прикрепить файл">
+            <input type="file" accept="image/*,application/pdf" hidden multiple />
+            <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" style="color: #000000">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </label>
+          <input type="text" class="chat-bar__input" placeholder="Начните расшифровку..." />
+          <button class="decipher-btn">
+            <svg class="decipher-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c.71 0 1.4.08 2.06.24" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="scripts/app.js"></script>
+    <script>
+      (() => {
+        if (window.__mymetricaMainReady) return;
+
+        const fallbackToast = (msg) => {
+          const el = document.getElementById('toast');
+          if (!el) return;
+          el.textContent = msg;
+          el.classList.add('is-visible');
+          clearTimeout(el.__t);
+          el.__t = setTimeout(() => el.classList.remove('is-visible'), 2200);
+        };
+
+        const applyUserName = () => {
+          const nameEl = document.getElementById('currentName');
+          const avatarEl = document.querySelector('.avatar');
+          if (!nameEl) return;
+
+          try {
+            const tg = window.Telegram?.WebApp;
+            const user = tg?.initDataUnsafe?.user;
+            
+            // Always use Telegram name if available
+            if (user?.first_name) {
+              nameEl.textContent = user.first_name;
+            }
+            
+            // Always use Telegram avatar if available
+            if (user?.photo_url && avatarEl) {
+              const img = document.createElement('img');
+              img.src = user.photo_url;
+              img.alt = user.first_name || 'Аватар';
+              img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+              avatarEl.innerHTML = '';
+              avatarEl.appendChild(img);
+            }
+          } catch {
+          }
+        };
+
+        // Initialize
+        applyUserName();
+
+        // Initialize header functionality
+        if (typeof initHeader === 'function') {
+          initHeader();
+        }
+
+        // Telegram setup
+        const tg = window.Telegram?.WebApp;
+        if (typeof tg.setHeaderColor === 'function') {
+          tg.setHeaderColor('#eef2f6');
+        }
+        if (typeof tg.setBackgroundColor === 'function') {
+          tg.setBackgroundColor('#e2e6ed');
+        }
+        if (typeof tg.BackButton === 'object') {
+          tg.BackButton.show();
+          tg.BackButton.onClick(() => {
+            window.location.href = 'index.html';
+          });
+          // Force back button behavior instead of close
+          tg.BackButton.isVisible = true;
+        }
+      })();
+    </script>
+  </body>
+</html>
